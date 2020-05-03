@@ -1,9 +1,23 @@
 package tests
 
+import (
+	"os"
+
+	"github.com/litmuschaos/chaos-operator/pkg/apis/litmuschaos/v1alpha1"
+)
+
 var (
 
-	// ChaosNamespace where the chaos will be performed
-	ChaosNamespace = "litmus"
+	//ChaosNamespace : where the chaos will be performed
+	ChaosNamespace = os.Getenv("APP_NS")
+	//ApplicationLabel : Label of application pod
+	ApplicationLabel = os.Getenv("APP_LABEL")
+	//TotalChaosDuration : Time Duration of Chaos
+	TotalChaosDuration = os.Getenv("TOTAL_CHAOS_DURATION")
+	//ChaosInterval : Time Interval for Rerunning Chaos
+	ChaosInterval = os.Getenv("CHAOS_INTERVAL")
+	//TargetContainer : Name of target container
+	TargetContainer = os.Getenv("TARGET_CONTAINER")
 
 	//rbacPath of different chaos experiments
 	PodDeleteRbacPath            = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/master/charts/generic/pod-delete/rbac.yaml"
@@ -19,17 +33,17 @@ var (
 	PodNetworkLossRbacPath       = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/master/charts/generic/pod-network-loss/rbac.yaml"
 
 	//experimentPath of different chaosexperiments
-	PodDeleteExperimentPath            = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/pod-delete/experiment.yaml"
-	ContainerKillExperimentPath        = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/container-kill/experiment.yaml"
-	DiskFillExperimentPath             = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/disk-fill/experiment.yaml"
-	NodeCPUHogExperimentPath           = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/node-cpu-hog/experiment.yaml"
-	NodeDrainExperimentPath            = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/node-drain/experiment.yaml"
-	NodeMemoryHogExperimentPath        = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/node-memory-hog/experiment.yaml"
-	PodCPUHogExperimentPath            = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/pod-cpu-hog/experiment.yaml"
-	PodMemoryHogExperimentPath         = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/pod-memory-hog/experiment.yaml"
-	PodNetworkCorruptionExperimentPath = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/pod-network-corruption/experiment.yaml"
-	PodNetworkLatencyExperimentPath    = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/pod-network-latency/experiment.yaml"
-	PodNetworkLossExperimentPath       = "https://hub.litmuschaos.io/api/chaos?file=charts/generic/pod-network-loss/experiment.yaml"
+	PodDeleteExperimentPath            = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/pod-delete/experiment.yaml"
+	ContainerKillExperimentPath        = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/container-kill/experiment.yaml"
+	DiskFillExperimentPath             = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/disk-fill/experiment.yaml"
+	NodeCPUHogExperimentPath           = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/node-cpu-hog/experiment.yaml"
+	NodeDrainExperimentPath            = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/node-drain/experiment.yaml"
+	NodeMemoryHogExperimentPath        = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/node-memory-hog/experiment.yaml"
+	PodCPUHogExperimentPath            = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/pod-cpu-hog/experiment.yaml"
+	PodMemoryHogExperimentPath         = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/pod-memory-hog/experiment.yaml"
+	PodNetworkCorruptionExperimentPath = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/pod-network-corruption/experiment.yaml"
+	PodNetworkLatencyExperimentPath    = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/pod-network-latency/experiment.yaml"
+	PodNetworkLossExperimentPath       = "https://hub.litmuschaos.io/api/chaos/master?file=charts/generic/pod-network-loss/experiment.yaml"
 
 	//enginePath of different chaosengines
 	PodDeleteEnginePath            = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/master/charts/generic/pod-delete/engine.yaml"
@@ -43,6 +57,11 @@ var (
 	PodNetworkCorruptionEnginePath = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/master/charts/generic/pod-network-corruption/engine.yaml"
 	PodNetworkLatencyEnginePath    = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/master/charts/generic/pod-network-latency/engine.yaml"
 	PodNetworkLossEnginePath       = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/master/charts/generic/pod-network-loss/engine.yaml"
+
+	//InstallLitmus : Path to create operator
+	InstallLitmus = "https://raw.githubusercontent.com/litmuschaos/pages/master/docs/litmus-operator-latest.yaml"
+	//LitmusCrd : Path to litmus crds
+	LitmusCrd = "https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml"
 )
 
 // EngineDetails struct is for collecting all the engine-related details

@@ -1,6 +1,8 @@
-package rbac
+package utils
 
 import (
+	"bytes"
+	"fmt"
 	"os/exec"
 
 	"github.com/pkg/errors"
@@ -9,7 +11,9 @@ import (
 )
 
 var (
-	err error
+	err    error
+	out    bytes.Buffer
+	stderr bytes.Buffer
 )
 
 // InstallRbac function is for the Rbac Creation for indivisual experiments. we need to pass the address
@@ -28,10 +32,14 @@ func InstallRbac(rbacPath string, rbacNamespace string, experimentName string, c
 	if err != nil {
 		return errors.Wrapf(err, "Fail to Modify experiment file, due to %v", err)
 	}
-	err = exec.Command("kubectl", "apply", "-f", experimentName+"-sa.yaml").Run()
+	cmd := exec.Command("kubectl", "apply", "-f", experimentName+"-sa.yaml")
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err = cmd.Run()
 	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 		return errors.Wrapf(err, "Fail to create the file,due to %v", err)
 	}
-
+	fmt.Println("Result: " + out.String())
 	return nil
 }

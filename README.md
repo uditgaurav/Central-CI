@@ -1,2 +1,2 @@
-# Central-CI
-This Repo contains the code of running all experiments 
+# Litmus Chaos Experiment templates for CI
+Litmus CI Lib generates chaos experiment templates that can be used to run different chaos experiments at remote places. The templates can also be used in Github Actions and Gitlab for running chaos experiments against the application pod to check the behavior of application pod under different chaos scenarios.

@@ -1,14 +1,11 @@
-package job
+package utils
 
 import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
-	"os/exec"
 	"time"
 
-	chaosClient "github.com/litmuschaos/chaos-operator/pkg/client/clientset/versioned/typed/litmuschaos/v1alpha1"
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,7 +37,7 @@ func JobLogs(experimentName string, jobNamespace string, engineName string, clie
 	// Getting the pod from the list of pods
 	for _, podList := range job.Items {
 		//Waiting of some infinite time (3000s) for the compition of job
-		//If job gets stuck, then Gitlab job will fail after deafult time(10m)
+		//If job gets stuck, then Gitlab job will fail after default time(10m)
 		for i := 0; i < 300; i++ {
 			if string(podList.Status.Phase) != "Succeeded" {
 				time.Sleep(10 * time.Second)
@@ -88,24 +85,4 @@ func JobLogs(experimentName string, jobNamespace string, engineName string, clie
 		}
 	}
 	return 0, nil
-}
-
-//UpdateResultTable will update the result of pipelines in a table on github using python update script
-func UpdateResultTable(experimentName string, testVerdict string, engineName string, clientSet *chaosClient.LitmuschaosV1alpha1Client) error {
-
-	//Updating the result table
-	fmt.Println("The job_id for the job is:", os.Getenv("CI_JOB_ID"))
-	fmt.Println("The testVerdict for the experiment is:", testVerdict)
-	cmd := exec.Command("python3", "-u", "../utils/result_update.py", "--job_id", os.Getenv("CI_JOB_ID"), "--stage", "Experiment", "--test_desc", experimentName, "--test_result", testVerdict, "--time_stamp", (time.Now().Format(time.ANSIC)), "--token", os.Getenv("GITHUB_TOKEN"), "--test_name", experimentName)
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		return err
-	}
-	fmt.Println("Result: " + out.String())
-	return nil
 }

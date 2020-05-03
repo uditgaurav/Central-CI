@@ -9,10 +9,10 @@ import (
 
 	"github.com/litmuschaos/chaos-operator/pkg/apis/litmuschaos/v1alpha1"
 	chaosClient "github.com/litmuschaos/chaos-operator/pkg/client/clientset/versioned/typed/litmuschaos/v1alpha1"
-	"github.com/uditgaurav/Central-CI/pkg/utils"
-	chaosTypes "github.com/uditgaurav/Central-CI/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/uditgaurav/central-ci/pkg/utils"
+	chaosTypes "github.com/uditgaurav/central-ci/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	scheme "k8s.io/client-go/kubernetes/scheme"
@@ -30,6 +30,7 @@ var (
 	err            error
 	experimentName = "pod-delete"
 	engineName     = "engine1"
+	force          = os.Getenv("FORCE")
 )
 
 func TestChaos(t *testing.T) {
@@ -64,27 +65,13 @@ var _ = BeforeSuite(func() {
 		fmt.Println(err)
 	}
 
-	//Getting the Application Status
-	app, _ := client.AppsV1().Deployments(chaosTypes.ChaosNamespace).Get("nginx", metav1.GetOptions{})
-	count := 0
-	for app.Status.UnavailableReplicas != 0 {
-		if count < 50 {
-			fmt.Printf("Application is Creating, Currently Unavaliable Count is: %v \n", app.Status.UnavailableReplicas)
-			app, _ = client.AppsV1().Deployments(chaosTypes.ChaosNamespace).Get("nginx", metav1.GetOptions{})
-			time.Sleep(10 * time.Second)
-			count++
-		} else {
-			Fail("Application fails to get in ready state")
-		}
-	}
-
 })
 
 //BDD Tests for pod-delete experiment
 var _ = Describe("BDD of pod-delete experiment", func() {
 
 	// BDD TEST CASE 1
-	Context("Check for litmus components", func() {
+	Context("Check for Litmus components", func() {
 
 		It("Should check for creation of runner pod", func() {
 
@@ -114,18 +101,22 @@ var _ = Describe("BDD of pod-delete experiment", func() {
 			Expect(err).To(BeNil(), "Failed to update engine name in engine")
 			err = utils.EditFile(experimentName+"-ce.yaml", "appns: 'default'", "appns: "+chaosTypes.ChaosNamespace)
 			Expect(err).To(BeNil(), "Failed to update application namespace in engine")
-			err = utils.EditFile(experimentName+"-ce.yaml", "jobCleanUpPolicy: 'delete'", "jobCleanUpPolicy: 'retain'")
-			Expect(err).To(BeNil(), "Failed to update jobCleanupPolicy in engine")
 			err = utils.EditFile(experimentName+"-ce.yaml", "annotationCheck: 'true'", "annotationCheck: 'false'")
 			Expect(err).To(BeNil(), "Failed to update AnnotationCheck in engine")
-			err = utils.EditFile(experimentName+"-ce.yaml", "applabel: 'app=nginx'", "applabel: 'run=nginx'")
-			Expect(err).To(BeNil(), "Failed to update AnnotationCheck in engine")
+			err = utils.EditFile(experimentName+"-ce.yaml", "applabel: 'app=nginx'", "applabel: "+chaosTypes.ApplicationLabel)
+			Expect(err).To(BeNil(), "Failed to update application label in engine")
+			err = utils.EditKeyValue(experimentName+"-ce.yaml", "TOTAL_CHAOS_DURATION", "value: '30'", "value: '"+chaosTypes.TotalChaosDuration+"'")
+			Expect(err).To(BeNil(), "Failed to update total chaos duration")
+			err = utils.EditKeyValue(experimentName+"-ce.yaml", "CHAOS_INTERVAL", "value: '10'", "value: '"+chaosTypes.ChaosInterval+"'")
+			Expect(err).To(BeNil(), "Failed to update chaos interval")
+			err = utils.EditKeyValue(experimentName+"-ce.yaml", "FORCE", "value: 'false'", "value: '"+force+"'")
+			Expect(err).To(BeNil(), "Failed to update chaos interval")
 
 			//Creating ChaosEngine
 			By("Creating ChaosEngine")
 			err = exec.Command("kubectl", "apply", "-f", experimentName+"-ce.yaml", "-n", chaosTypes.ChaosNamespace).Run()
-			Expect(err).To(BeNil(), "Fail to create chaos engine")
-			klog.Info("ChaosEngine created successfully...")
+			Expect(err).To(BeNil(), "Fail to create ChaosEngine")
+			klog.Info("ChaosEngine created successfully")
 			time.Sleep(2 * time.Second)
 
 			//Fetching the runner pod and Checking if it get in Running state or not

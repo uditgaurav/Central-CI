@@ -32,7 +32,7 @@ type ChaosEngineSpec struct {
 	AnnotationCheck string `json:"annotationCheck,omitempty"`
 	//ChaosServiceAccount is the SvcAcc specified for chaos runner pods
 	ChaosServiceAccount string `json:"chaosServiceAccount"`
-	//Components contains the image, imagePullPolicy, arguments, and commands of runner
+	//Components contains the image of runnner and monitor pod
 	Components ComponentParams `json:"components"`
 	//Consists of experiments executed by the engine
 	Experiments []ExperimentList `json:"experiments"`
@@ -54,17 +54,6 @@ const (
 	EngineStateActive EngineState = "active"
 	// EngineStateStop stops the reconcile call
 	EngineStateStop EngineState = "stop"
-)
-
-type ExperimentStatus string
-
-const (
-	ExperimentStatusRunning    ExperimentStatus = "Running"
-	ExperimentStatusCompleted  ExperimentStatus = "Completed"
-	ExperimentStatusWaiting    ExperimentStatus = "Waiting for Job Creation"
-	ExperimentStatusNotFound   ExperimentStatus = "ChaosExperiment Not Found"
-	ExperimentStatusSuccessful ExperimentStatus = "Execution Successful"
-	ExperimentStatusAborted    ExperimentStatus = "Forcefully Aborted"
 )
 
 // EngineStatus provides interface for all supported strings in status.EngineStatus
@@ -112,10 +101,18 @@ type ApplicationParams struct {
 	AppKind string `json:"appkind"`
 }
 
-// ComponentParams defines information about the runner
+// ComponentParams defines information about the runner and monitor image
 type ComponentParams struct {
+	//Contains informations of the monitor pod
+	Monitor MonitorInfo `json:"monitor"`
 	//Contains informations of the the runner pod
 	Runner RunnerInfo `json:"runner"`
+}
+
+// MonitorInfo defines the information of the monitor pod
+type MonitorInfo struct {
+	//Image of the monitor pod
+	Image string `json:"image"`
 }
 
 // RunnerInfo defines the information of the runnerinfo pod
@@ -168,7 +165,7 @@ type ExperimentStatuses struct {
 	//Name of experiment whose status is detailed
 	Name string `json:"name"`
 	//Current state of chaos experiment
-	Status ExperimentStatus `json:"status"`
+	Status string `json:"status"`
 	//Result of a completed chaos experiment
 	Verdict string `json:"verdict"`
 	//Time of last state change of chaos experiment
