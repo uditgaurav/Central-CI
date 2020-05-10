@@ -123,7 +123,7 @@ var _ = Describe("BDD of pod-delete experiment", func() {
 
 			//Creating ChaosEngine
 			By("Creating ChaosEngine")
-			cmd := exec.Command("kubectl", "apply", "-f", experimentName+"-ce.yaml", "-n", pkg.GetEnv("APP_NS", "default")).Run()
+			cmd := exec.Command("kubectl", "apply", "-f", experimentName+"-ce.yaml", "-n", pkg.GetEnv("APP_NS", "default"))
 			cmd.Stdout = &out
 			cmd.Stderr = &stderr
 			err = cmd.Run()
