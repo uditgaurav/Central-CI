@@ -102,7 +102,7 @@ var _ = Describe("BDD of pod-cpu-hog experiment", func() {
 			Expect(err).To(BeNil(), "Failed to update namespace in engine")
 			err = pkg.EditFile(experimentName+"-ce.yaml", "appns: 'default'", "appns: '"+pkg.GetEnv("APP_NS", "default")+"'")
 			Expect(err).To(BeNil(), "Failed to update application namespace in engine")
-			err = pkg.EditFile(experimentName+"-ce.yaml", "appkind: 'deployment'", "appkind: "+pkg.GetEnv("APP_KIND", "default"))
+			err = pkg.EditFile(experimentName+"-ce.yaml", "appkind: 'deployment'", "appkind: "+pkg.GetEnv("APP_KIND", "deployment"))
 			Expect(err).To(BeNil(), "Failed to update application kind in engine")
 			err = pkg.EditFile(experimentName+"-ce.yaml", "annotationCheck: 'true'", "annotationCheck: 'false'")
 			Expect(err).To(BeNil(), "Failed to update AnnotationCheck in engine")
