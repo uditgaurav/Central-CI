@@ -28,9 +28,8 @@ var (
 	client         *kubernetes.Clientset
 	clientSet      *chaosClient.LitmuschaosV1alpha1Client
 	err            error
-	experimentName = "pod-delete"
-	engineName     = "engine1"
-	force          = os.Getenv("FORCE")
+	experimentName = "pod-network-loss"
+	engineName     = "engine7"
 )
 
 func TestChaos(t *testing.T) {
@@ -67,8 +66,8 @@ var _ = BeforeSuite(func() {
 
 })
 
-//BDD Tests for pod-delete experiment
-var _ = Describe("BDD of pod-delete experiment", func() {
+//BDD Tests for pod-network-loss experiment
+var _ = Describe("BDD of pod-network-loss experiment", func() {
 
 	// BDD TEST CASE 1
 	Context("Check for Litmus components", func() {
@@ -76,13 +75,13 @@ var _ = Describe("BDD of pod-delete experiment", func() {
 		It("Should check for creation of runner pod", func() {
 
 			//Installing RBAC for the experiment
-			err := pkg.InstallRbac(chaosTypes.PodDeleteRbacPath, pkg.GetEnv("APP_NS", "default"), experimentName, client)
+			err := pkg.InstallRbac(chaosTypes.PodNetworkLossRbacPath, pkg.GetEnv("APP_NS", "default"), experimentName, client)
 			Expect(err).To(BeNil(), "Fail to create RBAC")
 			klog.Info("Rbac has been created successfully !!!")
 
 			//Creating Chaos-Experiment
 			By("Creating Experiment")
-			err = pkg.DownloadFile(experimentName+".yaml", chaosTypes.PodDeleteExperimentPath)
+			err = pkg.DownloadFile(experimentName+".yaml", chaosTypes.PodNetworkLossExperimentPath)
 			Expect(err).To(BeNil(), "fail to fetch chaos experiment file")
 			err = pkg.EditFile(experimentName+".yaml", "image: \"litmuschaos/ansible-runner:latest\"", "image: "+pkg.GetEnv("EXPERIMENT_IMAGE", "litmuschaos/ansible-runner:latest"))
 			Expect(err).To(BeNil(), "Failed to update the experiment image")
@@ -93,30 +92,32 @@ var _ = Describe("BDD of pod-delete experiment", func() {
 			//Installing chaos engine for the experiment
 			//Fetching engine file
 			By("Fetching engine file for the experiment")
-			err = pkg.DownloadFile(experimentName+"-ce.yaml", chaosTypes.PodDeleteEnginePath)
+			err = pkg.DownloadFile(experimentName+"-ce.yaml", chaosTypes.PodNetworkLossEnginePath)
 			Expect(err).To(BeNil(), "Fail to fetch engine file")
 
 			//Modify chaos engine spec
+			err = pkg.EditFile(experimentName+"-ce.yaml", "name: nginx-network-chaos", "name: "+engineName)
+			Expect(err).To(BeNil(), "Failed to update engine name in engine")
 			err = pkg.EditFile(experimentName+"-ce.yaml", "namespace: default", "namespace: "+pkg.GetEnv("APP_NS", "default"))
 			Expect(err).To(BeNil(), "Failed to update namespace in engine")
-			err = pkg.EditFile(experimentName+"-ce.yaml", "name: nginx-chaos", "name: "+engineName)
-			Expect(err).To(BeNil(), "Failed to update engine name in engine")
-			err = pkg.EditFile(experimentName+"-ce.yaml", "appns: 'default'", "appns: "+pkg.GetEnv("APP_NS", "default"))
+			err = pkg.EditFile(experimentName+"-ce.yaml", "appns: 'default'", "appns: '"+pkg.GetEnv("APP_NS", "default")+"'")
 			Expect(err).To(BeNil(), "Failed to update application namespace in engine")
-			err = pkg.EditFile(experimentName+"-ce.yaml", "appkind: 'deployment'", "appkind: "+pkg.GetEnv("APP_KIND", "default"))
-			Expect(err).To(BeNil(), "Failed to update application kind in engine")
 			err = pkg.EditFile(experimentName+"-ce.yaml", "annotationCheck: 'true'", "annotationCheck: 'false'")
 			Expect(err).To(BeNil(), "Failed to update AnnotationCheck in engine")
-			err = pkg.EditFile(experimentName+"-ce.yaml", "applabel: 'app=nginx'", "applabel: "+pkg.GetEnv("APP_LABEL", "run=nginx"))
+			err = pkg.EditFile(experimentName+"-ce.yaml", "applabel: 'app=nginx'", "applabel: '"+pkg.GetEnv("APP_LABEL", "run=nginx")+"'")
 			Expect(err).To(BeNil(), "Failed to update application label in engine")
+			err = pkg.EditFile(experimentName+"-ce.yaml", "appkind: 'deployment'", "appkind: "+pkg.GetEnv("APP_KIND", "default"))
+			Expect(err).To(BeNil(), "Failed to update application kind in engine")
 			err = pkg.EditFile(experimentName+"-ce.yaml", "jobCleanUpPolicy: 'delete'", "jobCleanUpPolicy: 'retain'")
 			Expect(err).To(BeNil(), "Failed to update application label in engine")
-			err = pkg.EditKeyValue(experimentName+"-ce.yaml", "TOTAL_CHAOS_DURATION", "value: '30'", "value: '"+pkg.GetEnv("TOTAL_CHAOS_DURATION", "30")+"'")
+			err = pkg.EditKeyValue(experimentName+"-ce.yaml", "TOTAL_CHAOS_DURATION", "value: '30'", "value: '"+pkg.GetEnv("TOTAL_CHAOS_DURATION", "60")+"'")
 			Expect(err).To(BeNil(), "Failed to update total chaos duration")
-			err = pkg.EditKeyValue(experimentName+"-ce.yaml", "CHAOS_INTERVAL", "value: '10'", "value: '"+pkg.GetEnv("CHAOS_INTERVAL", "10")+"'")
-			Expect(err).To(BeNil(), "Failed to update chaos interval")
-			err = pkg.EditKeyValue(experimentName+"-ce.yaml", "FORCE", "value: 'false'", "value: '"+pkg.GetEnv("FORCE", "false")+"'")
-			Expect(err).To(BeNil(), "Failed to update the force")
+			err = pkg.EditKeyValue(experimentName+"-ce.yaml", "NETWORK_INTERFACE", "value: ''", "value: '"+pkg.GetEnv("NETWORK_INTERFACE", "eth0")+"'")
+			Expect(err).To(BeNil(), "Failed to update the network interface")
+			err = pkg.EditKeyValue(experimentName+"-ce.yaml", "TARGET_CONTAINER", "value: 'nginx'", "value: '"+pkg.GetEnv("TARGET_CONTAINER", "nginx")+"'")
+			Expect(err).To(BeNil(), "Failed to update the target container name")
+			err = pkg.EditKeyValue(experimentName+"-ce.yaml", "NETWORK_PACKET_LOSS_PERCENTAGE", "value: 'nginx'", "value: '"+pkg.GetEnv("NETWORKNETWORK_PACKET_LOSS_PERCENTAGE_LATENCY", "100")+"'")
+			Expect(err).To(BeNil(), "Failed to update the network packet loss percentage")
 
 			//Creating ChaosEngine
 			By("Creating ChaosEngine")

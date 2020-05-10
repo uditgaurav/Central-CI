@@ -18,6 +18,8 @@ var (
 	ChaosInterval = os.Getenv("CHAOS_INTERVAL")
 	//TargetContainer : Name of target container
 	TargetContainer = os.Getenv("TARGET_CONTAINER")
+	//NodeCPUCore : Name of chores of CPU
+	NodeCPUCore = os.Getenv("NODE_CPU_CORE")
 
 	//rbacPath of different chaos experiments
 	PodDeleteRbacPath            = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/master/charts/generic/pod-delete/rbac.yaml"

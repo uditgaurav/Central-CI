@@ -6,9 +6,10 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/mayadata-io/chaos-ci-lib/pkg"
+	chaosTypes "github.com/mayadata-io/chaos-ci-lib/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	chaosTypes "github.com/uditgaurav/central-ci/types"
 	"k8s.io/client-go/kubernetes"
 	scheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -79,15 +80,21 @@ var _ = Describe("BDD of Litmus cleanup", func() {
 
 			//Deleting all chaosengines
 			By("Deleting all chaosengine")
-			err = exec.Command("kubectl", "delete", "chaosengine", "-n", chaosTypes.ChaosNamespace, "--all").Run()
+			err = exec.Command("kubectl", "delete", "chaosengine", "-n", pkg.GetEnv("APP_NS", "default"), "--all").Run()
 			Expect(err).To(BeNil(), "Failed to delete chaosengine")
 			klog.Info("All chaosengine deleted successfully")
 
 			//Deleting all chaosexperiment
 			By("Deleting all chaosexperiment")
-			err = exec.Command("kubectl", "delete", "chaosexperiment", "-n", chaosTypes.ChaosNamespace, "--all").Run()
+			err = exec.Command("kubectl", "delete", "chaosexperiment", "-n", pkg.GetEnv("APP_NS", "default"), "--all").Run()
 			Expect(err).To(BeNil(), "Failed to delete chaosexperiment")
 			klog.Info("All chaosexperiment deleted successfully")
+
+			//Deleting all chaosresults
+			By("Deleting all chaosresults")
+			err = exec.Command("kubectl", "delete", "chaosresult", "-n", pkg.GetEnv("APP_NS", "default"), "--all").Run()
+			Expect(err).To(BeNil(), "Failed to delete chaosresult")
+			klog.Info("All chaosresult deleted successfully")
 
 			//Deleting crds
 			By("Delete chaosengine crd")

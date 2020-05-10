@@ -8,9 +8,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mayadata-io/chaos-ci-lib/pkg"
+	chaosTypes "github.com/mayadata-io/chaos-ci-lib/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	chaosTypes "github.com/uditgaurav/central-ci/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	scheme "k8s.io/client-go/kubernetes/scheme"
@@ -33,7 +34,7 @@ var (
 	stderr     bytes.Buffer
 )
 
-func TestChaos(t *testing.T) {
+func testChaos(t *testing.T) {
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "BDD test")
@@ -79,7 +80,15 @@ var _ = Describe("BDD of Litmus installation", func() {
 			//Installing Litmus
 			By("Installing Litmus")
 			klog.Info("Installing Litmus")
-			cmd := exec.Command("kubectl", "apply", "-f", chaosTypes.InstallLitmus)
+			err = pkg.DownloadFile("install-litmus.yaml", chaosTypes.InstallLitmus)
+			Expect(err).To(BeNil(), "fail to fetch operator yaml file to install litmus")
+			klog.Info("Updating Operator Image")
+			err = pkg.EditFile("install-litmus.yaml", "image: litmuschaos/chaos-operator:latest", "image: "+pkg.GetEnv("OPERATOR_IMAGE", "litmuschaos/chaos-operator:latest"))
+			Expect(err).To(BeNil(), "Failed to update the operator image")
+			klog.Info("Updating Runner Image")
+			err = pkg.EditKeyValue("install-litmus.yaml", "CHAOS_RUNNER_IMAGE", "value: \"litmuschaos/chaos-runner:latest\"", "value: '"+pkg.GetEnv("RUNNER_IMAGE", "litmuschaos/chaos-runner:latest")+"'")
+			Expect(err).To(BeNil(), "Failed to update chaos interval")
+			cmd := exec.Command("kubectl", "apply", "-f", "install-litmus.yaml")
 			cmd.Stdout = &out
 			cmd.Stderr = &stderr
 			err = cmd.Run()
@@ -91,12 +100,12 @@ var _ = Describe("BDD of Litmus installation", func() {
 			fmt.Println("Result: " + out.String())
 
 			//Checking the status of operator
-			operator, _ := client.AppsV1().Deployments(chaosTypes.ChaosNamespace).Get("chaos-operator-ce", metav1.GetOptions{})
+			operator, _ := client.AppsV1().Deployments(pkg.GetEnv("APP_NS", "default")).Get("chaos-operator-ce", metav1.GetOptions{})
 			count := 0
 			for operator.Status.UnavailableReplicas != 0 {
 				if count < 50 {
 					fmt.Printf("Unavaliable Count: %v \n", operator.Status.UnavailableReplicas)
-					operator, _ = client.AppsV1().Deployments(chaosTypes.ChaosNamespace).Get("chaos-operator-ce", metav1.GetOptions{})
+					operator, _ = client.AppsV1().Deployments(pkg.GetEnv("APP_NS", "default")).Get("chaos-operator-ce", metav1.GetOptions{})
 					time.Sleep(5 * time.Second)
 					count++
 				} else {
