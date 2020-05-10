@@ -72,23 +72,17 @@ var _ = Describe("BDD of Litmus cleanup", func() {
 
 		It("Should check for deletion of Litmus", func() {
 
-			//Deleting litmus operator
-			By("Delete Litmus operator")
-			err = exec.Command("kubectl", "delete", "deploy", "chaos-operator-ce", "-n", "litmus").Run()
-			Expect(err).To(BeNil(), "Failed to delete chaos operator")
-			klog.Info("Litmus chaos operator deleted sucessfully")
+			//Deleting all chaosexperiment
+			By("Deleting all chaosexperiment")
+			err = exec.Command("kubectl", "delete", "chaosexperiment", "-n", pkg.GetEnv("APP_NS", "default"), "--all").Run()
+			Expect(err).To(BeNil(), "Failed to delete chaosexperiment")
+			klog.Info("All chaosexperiment deleted successfully")
 
 			//Deleting all chaosengines
 			By("Deleting all chaosengine")
 			err = exec.Command("kubectl", "delete", "chaosengine", "-n", pkg.GetEnv("APP_NS", "default"), "--all").Run()
 			Expect(err).To(BeNil(), "Failed to delete chaosengine")
 			klog.Info("All chaosengine deleted successfully")
-
-			//Deleting all chaosexperiment
-			By("Deleting all chaosexperiment")
-			err = exec.Command("kubectl", "delete", "chaosexperiment", "-n", pkg.GetEnv("APP_NS", "default"), "--all").Run()
-			Expect(err).To(BeNil(), "Failed to delete chaosexperiment")
-			klog.Info("All chaosexperiment deleted successfully")
 
 			//Deleting all chaosresults
 			By("Deleting all chaosresults")
@@ -113,6 +107,12 @@ var _ = Describe("BDD of Litmus cleanup", func() {
 			err = exec.Command("kubectl", "delete", "clusterrole", "litmus").Run()
 			Expect(err).To(BeNil(), "Failed to delete litmus clusterrole")
 			klog.Info("Litmus clusterrole deleted sucessfully")
+
+			//Deleting litmus operator
+			By("Delete Litmus operator")
+			err = exec.Command("kubectl", "delete", "deploy", "chaos-operator-ce", "-n", "litmus").Run()
+			Expect(err).To(BeNil(), "Failed to delete chaos operator")
+			klog.Info("Litmus chaos operator deleted sucessfully")
 
 			//Deleting litmus namespace
 			By("Delete Litmus namespace")
