@@ -96,7 +96,7 @@ var _ = Describe("BDD of pod-network-latency experiment", func() {
 			Expect(err).To(BeNil(), "Fail to fetch engine file")
 
 			//Modify chaos engine spec
-			err = pkg.EditFile(experimentName+"-ce.yaml", "name:  nginx-network-chaos", "name: "+engineName)
+			err = pkg.EditFile(experimentName+"-ce.yaml", "name: nginx-network-chaos", "name: "+engineName)
 			Expect(err).To(BeNil(), "Failed to update engine name in engine")
 			err = pkg.EditFile(experimentName+"-ce.yaml", "namespace: default", "namespace: "+pkg.GetEnv("APP_NS", "default"))
 			Expect(err).To(BeNil(), "Failed to update namespace in engine")

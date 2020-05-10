@@ -7,47 +7,43 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/klog"
 )
 
 //RunnerPodStatus will check the status of runner pod and waits for it to come in running state
 func RunnerPodStatus(runnerNamespace string, engineName string, client *kubernetes.Clientset) (int, error) {
 
-	//Waiting for runner pod Creation
-	for i := 0; i < 5; i++ {
-		runner, _ := client.CoreV1().Pods(runnerNamespace).Get(engineName+"-runner", metav1.GetOptions{})
-		if string(runner.Name) == "" {
+	for i := 0; i < 4; i++ {
+		checkrunner, err := client.CoreV1().Pods(runnerNamespace).Get(engineName+"-runner", metav1.GetOptions{})
+		if err != nil || len(checkrunner.Name) == 0 {
 			klog.Info("Waiting for runner pod creation")
 			time.Sleep(5 * time.Second)
 		} else {
 			break
-		}
-		//Fetching the runner pod and Checking if it gets in Running state or not
-		runner, err := client.CoreV1().Pods(runnerNamespace).Get(engineName+"-runner", metav1.GetOptions{})
-		if err != nil {
-			return 0, errors.Wrapf(err, "Fail to get the runner pod status, due to:%v", err)
-		}
-		fmt.Printf("name : %v \n", runner.Name)
-		//Running it for loger duration of time (say 300 * 10)
-		//The Gitlab job will quit if it takes more time than default time (10 min)
-		for i := 0; i < 300; i++ {
-			if string(runner.Status.Phase) != "Running" {
-				time.Sleep(1 * time.Second)
-				runner, err = client.CoreV1().Pods(runnerNamespace).Get(engineName+"-runner", metav1.GetOptions{})
-				if err != nil {
-					return 0, errors.Wrapf(err, "Fail to get the runner pod status after sleep, due to:%v", err)
-				}
-				if runner.Status.Phase == "Succeeded" || runner.Status.Phase == "" {
-					return 1, nil
-				}
-				fmt.Printf("The Runner pod is in %v State \n", runner.Status.Phase)
-			} else {
-				break
+		}	//Fetching the runner pod and Checking if it gets in Running state or not
+	runner, err := client.CoreV1().Pods(runnerNamespace).Get(engineName+"-runner", metav1.GetOptions{})
+	if err != nil {
+		return 0, errors.Wrapf(err, "Fail to get the runner pod status, due to:%v", err)
+	}
+	fmt.Printf("name : %v \n", runner.Name)
+	//Running it for loger duration of time (say 300 * 10)
+	//The Gitlab job will quit if it takes more time than default time (10 min)
+	for i := 0; i < 300; i++ {
+		if string(runner.Status.Phase) != "Running" {
+			time.Sleep(1 * time.Second)
+			runner, err = client.CoreV1().Pods(runnerNamespace).Get(engineName+"-runner", metav1.GetOptions{})
+			if err != nil {
+				return 0, errors.Wrapf(err, "Fail to get the runner pod status after sleep, due to:%v", err)
 			}
+			if runner.Status.Phase == "Succeeded" || runner.Status.Phase == "" {
+				return 1, nil
+			}
+			fmt.Printf("The Runner pod is in %v State \n", runner.Status.Phase)
+		} else {
+			break
 		}
-		if runner.Status.Phase != "Running" {
-			return 1, nil
-		}
+	}
+	if runner.Status.Phase != "Running" {
+		return 1, nil
 	}
 	return 0, nil
 
