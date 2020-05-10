@@ -34,7 +34,7 @@ var (
 	stderr     bytes.Buffer
 )
 
-func testChaos(t *testing.T) {
+func TestChaos(t *testing.T) {
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "BDD test")
