@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -31,6 +32,8 @@ var (
 	experimentName = "pod-delete"
 	engineName     = "engine1"
 	force          = os.Getenv("FORCE")
+	out            bytes.Buffer
+	stderr         bytes.Buffer
 )
 
 func TestChaos(t *testing.T) {
