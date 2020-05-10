@@ -120,8 +120,15 @@ var _ = Describe("BDD of pod-delete experiment", func() {
 
 			//Creating ChaosEngine
 			By("Creating ChaosEngine")
-			err = exec.Command("kubectl", "apply", "-f", experimentName+"-ce.yaml", "-n", pkg.GetEnv("APP_NS", "default")).Run()
-			Expect(err).To(BeNil(), "Fail to create ChaosEngine")
+			cmd := exec.Command("kubectl", "apply", "-f", experimentName+"-ce.yaml", "-n", pkg.GetEnv("APP_NS", "default")).Run()
+			cmd.Stdout = &out
+			cmd.Stderr = &stderr
+			err = cmd.Run()
+			if err != nil {
+				fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+				Fail("Fail to create chaosengine")
+			}
+			klog.Info("Result: " + out.String())
 			klog.Info("ChaosEngine created successfully")
 			time.Sleep(2 * time.Second)
 
