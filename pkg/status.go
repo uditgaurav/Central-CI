@@ -13,6 +13,7 @@ import (
 func RunnerPodStatus(runnerNamespace string, engineName string, client *kubernetes.Clientset) (int, error) {
 
 	//Fetching the runner pod and Checking if it gets in Running state or not
+	time.Sleep(10 * time.Second)
 	runner, err := client.CoreV1().Pods(runnerNamespace).Get(engineName+"-runner", metav1.GetOptions{})
 	if err != nil {
 		return 0, errors.Wrapf(err, "Fail to get the runner pod status, due to:%v", err)
